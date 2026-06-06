@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: kindle-bloom
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app
