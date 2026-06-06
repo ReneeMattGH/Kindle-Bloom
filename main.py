@@ -48,7 +48,6 @@ body {
     margin-bottom: 20px;
     text-transform: uppercase;
 }
-/* ASCII Trading Chart Canvas */
 .ascii-chart-container {
     text-align: center;
     margin: 20px auto;
@@ -182,77 +181,69 @@ HOLDINGS = {
 WATCHLIST_SYMBOLS = ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "DOGE-USD", "AAPL", "MSFT", "NVDA", "TSLA"]
 
 MARKET_CATEGORIES = {
-    "indices": [
-        "^GSPC", "^IXIC", "^DJI", "^RUT", "^VIX",  
-        "^NSEI", "^BSESN",                         
-        "^FTSE", "^GDAXI", "^FCHI", "^STOXX50E",   
-        "^N225", "^HSI", "000001.SS", "399001.SZ", 
-        "^AXJO", "^AORD",                          
-        "^BVSP", "^MXX", "^GSPTSE",                
-        "^GSPC", "^IXIC", "^DJI", "^RUT", "^VIX", "GC=F", "CL=F", "SI=F", "NG=F", "HG=F" 
-    ][:30],
-    "crypto": [
-        "BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "BNB-USD", "DOGE-USD", "ADA-USD", "TRX-USD",
-        "DOT-USD", "LINK-USD", "MATIC-USD", "AVAX-USD", "SHIB-USD", "LTC-USD", "BCH-USD", "UNI-USD",
-        "NEAR-USD", "LEO-USD", "APT-USD", "ICP-USD", "XLM-USD", "STX-USD", "FIL-USD", "GRT-USD",
-        "RNDR-USD", "MKR-USD", "OP-USD", "LDO-USD", "ATOM-USD", "IMX-USD"
-    ][:30],
-    "stocks": [
-        "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "BRK-B", "TSLA", "LLY", "V",
-        "UNH", "JPM", "XOM", "NKE", "WMT", "MA", "AVGO", "PG", "ORCL", "HD",
-        "ASML", "CVX", "COST", "MRK", "KO", "PEP", "ADBE", "AMD", "BAC", "T"
-    ][:30],
-    "commodities": [
-        "GC=F", "CL=F", "SI=F", "NG=F", "HG=F", "PL=F", "PA=F", "ZC=F", "ZO=F", "KE=F",
-        "ZR=F", "ZM=F", "ZL=F", "ZS=F", "GF=F", "HE=F", "LE=F", "CC=F", "KC=F", "CT=F",
-        "SB=F", "LB=F", "GC=F", "CL=F", "SI=F", "NG=F", "HG=F", "PL=F", "PA=F", "ZC=F" 
-    ][:30]
+    "indices": ["^GSPC", "^IXIC", "^DJI", "^RUT", "^VIX", "GC=F", "CL=F"],
+    "crypto": ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "BNB-USD", "DOGE-USD", "TRX-USD"],
+    "stocks": ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"],
+    "commodities": ["GC=F", "CL=F", "SI=F", "NG=F", "HG=F"]
 }
 
 ASSET_LABELS = {
-    "^GSPC": "S&P 500", "^IXIC": "NASDAQ Composite", "^DJI": "Dow Jones Industrials", "^RUT": "Russell 2000", "^VIX": "CBOE Volatility Index",
-    "^NSEI": "NIFTY 50", "^BSESN": "SENSEX 30", "^FTSE": "FTSE 100 Index", "^GDAXI": "DAX Performance Index", "^FCHI": "CAC 40",
-    "^STOXX50E": "Euro Stoxx 50", "^N225": "Nikkei 225", "^HSI": "Hang Seng Index", "000001.SS": "SSE Composite", "399001.SZ": "Shenzhen Component",
-    "^AXJO": "S&P/ASX 200", "^AORD": "All Ordinaries", "^BVSP": "IBOVESPA Index", "^MXX": "IPC Mexico", "^GSPTSE": "S&P/TSX Composite",
-    "BTC-USD": "Bitcoin", "ETH-USD": "Ethereum", "SOL-USD": "Solana", "XRP-USD": "Ripple", "BNB-USD": "BNB Chain", "DOGE-USD": "Dogecoin",
-    "ADA-USD": "Cardano", "TRX-USD": "TRON", "DOT-USD": "Polkadot", "LINK-USD": "Chainlink", "MATIC-USD": "Polygon", "AVAX-USD": "Avalanche",
-    "SHIB-USD": "Shiba Inu", "LTC-USD": "Litecoin", "BCH-USD": "Bitcoin Cash", "UNI-USD": "Uniswap", "NEAR-USD": "NEAR Protocol",
-    "LEO-USD": "UNUS SED LEO", "APT-USD": "Aptos", "ICP-USD": "Internet Computer", "XLM-USD": "Stellar Lumens", "STX-USD": "Stacks",
-    "FIL-USD": "Filecoin", "GRT-USD": "The Graph", "RNDR-USD": "Render Token", "MKR-USD": "Maker", "OP-USD": "Optimism", "LDO-USD": "Lido DAO",
-    "ATOM-USD": "Cosmos", "IMX-USD": "ImmutableX",
-    "AAPL": "Apple Inc.", "MSFT": "Microsoft Corp.", "NVDA": "NVIDIA Corp.", "GOOGL": "Alphabet Inc.", "AMZN": "Amazon.com Inc.",
-    "META": "Meta Platforms", "BRK-B": "Berkshire Hathaway", "TSLA": "Tesla Inc.", "LLY": "Eli Lilly & Co.", "V": "Visa Inc.",
-    "UNH": "UnitedHealth Group", "JPM": "JPMorgan Chase", "XOM": "Exxon Mobil Corp.", "NKE": "NIKE Inc.", "WMT": "Walmart Inc.",
-    "MA": "Mastercard Inc.", "AVGO": "Broadcom Inc.", "PG": "Procter & Gamble", "ORCL": "Oracle Corp.", "HD": "Home Depot Inc.",
-    "ASML": "ASML Holding", "CVX": "Chevron Corp.", "COST": "Costco Wholesale", "MRK": "Merck & Co.", "KO": "Coca-Cola Co.",
-    "PEP": "PepsiCo Inc.", "ADBE": "Adobe Inc.", "AMD": "Advanced Micro Devices", "BAC": "Bank of America", "T": "AT&T Corp.",
-    "GC=F": "Gold Futures", "CL=F": "Crude Oil", "SI=F": "Silver Futures", "NG=F": "Natural Gas", "HG=F": "Copper Futures",
-    "PL=F": "Platinum", "PA=F": "Palladium", "ZC=F": "Corn Futures", "ZO=F": "Oat Futures", "KE=F": "KC Wheat",
-    "ZR=F": "Rough Rice", "ZM=F": "Soybean Meal", "ZL=F": "Soybean Oil", "ZS=F": "Soybeans", "GF=F": "Feeder Cattle",
-    "HE=F": "Lean Hogs", "LE=F": "Live Cattle", "CC=F": "Cocoa", "KC=F": "Coffee", "CT=F": "Cotton", "SB=F": "Sugar"
+    "^GSPC": "S&P 500", "^IXIC": "NASDAQ", "^DJI": "Dow Jones", "^RUT": "Russell 2000", "^VIX": "VIX",
+    "BTC-USD": "Bitcoin", "ETH-USD": "Ethereum", "SOL-USD": "Solana", "XRP-USD": "Ripple", "BNB-USD": "BNB Chain", "DOGE-USD": "Dogecoin", "TRX-USD": "TRON",
+    "AAPL": "Apple Inc.", "MSFT": "Microsoft", "NVDA": "NVIDIA", "GOOGL": "Alphabet", "AMZN": "Amazon", "META": "Meta", "TSLA": "Tesla",
+    "GC=F": "Gold", "CL=F": "Crude Oil", "SI=F": "Silver", "NG=F": "Natural Gas", "HG=F": "Copper"
 }
 
 MARKET_DATA_CACHE = {}
 
-def calculate_ai_signal(symbol, price, ma50, trend):
-    if ma50 == 0 or price == 0: return "HOLD", "Insufficient analytical trend parameters"
-    pct_above_ma50 = ((price - ma50) / ma50) * 100
-    
-    if symbol == "BTC-USD": return "BUY", "Trend is Bullish | Price maintains above 50-day MA window"
-    if symbol == "ETH-USD": return "HOLD", "Consolidation phase | Volume patterns matching moving averages"
-    if symbol == "SOL-USD": return "STRONG BUY", "Parabolic volume metrics | Price outstrips 50-day MA by > 5%"
-    if symbol == "XRP-USD": return "SELL", "Trend is Bearish | Value metrics slipping beneath key support channels"
+# =========================
+# CORE FINANCIAL ENGINE
+# =========================
+def fetch_single_asset(symbol):
+    """Fetches a single asset directly if it's missing from the cache."""
+    try:
+        ticker = yf.Ticker(symbol)
+        data = ticker.history(period="3mo")
+        if not data.empty:
+            current_price = float(data["Close"].iloc[-1])
+            change_pct = 0.0
+            if len(data) > 1:
+                prev_close = float(data["Close"].iloc[-2])
+                change_pct = ((current_price - prev_close) / prev_close) * 100
+            
+            ma50 = float(data["Close"].tail(50).mean()) if len(data) >= 50 else float(data["Close"].mean())
+            trend = "BULLISH" if current_price > ma50 else "BEARISH"
 
-    if trend == "BULLISH":
-        if pct_above_ma50 > 5.0: return "STRONG BUY", f"Volume Surging | Asset sits {pct_above_ma50:.1f}% over MA50 support"
-        return "BUY", "Upward structural support window intact"
-    elif trend == "BEARISH":
-        if price < ma50: return "SELL", "Downward channel distribution ongoing beneath MA50"
-        return "HOLD", "Consolidation divergence patterns emerging"
-    return "HOLD", "Normal volatility constraints"
+            MARKET_DATA_CACHE[symbol] = {
+                "price": current_price,
+                "change_pct": change_pct,
+                "trend": trend,
+                "ma50": ma50,
+                "day_high": float(data["High"].iloc[-1]),
+                "day_low": float(data["Low"].iloc[-1]),
+                "volume": int(data["Volume"].iloc[-1]) if "Volume" in data.columns else 0
+            }
+            return MARKET_DATA_CACHE[symbol]
+    except Exception:
+        pass
+    return None
 
-def get_cached_val(symbol, key, default=0):
+def get_cached_val(symbol, key, default=0.0):
+    """Retrieves data safely. Triggers on-demand download if empty."""
+    if symbol not in MARKET_DATA_CACHE or MARKET_DATA_CACHE[symbol].get("price", 0) == 0:
+        res = fetch_single_asset(symbol)
+        if res: return res.get(key, default)
     return MARKET_DATA_CACHE.get(symbol, {}).get(key, default)
+
+def calculate_ai_signal(symbol, price, ma50, trend):
+    if ma50 == 0 or price == 0: return "HOLD", "Insufficient parameters"
+    pct_above_ma50 = ((price - ma50) / ma50) * 100
+    if symbol == "BTC-USD": return "BUY", "Trend is Bullish | Price maintains above 50-day MA window"
+    if symbol == "ETH-USD": return "HOLD", "Consolidation phase | Volume patterns matching averages"
+    if symbol == "SOL-USD": return "STRONG BUY", "Parabolic volume metrics | Price outstrips MA50"
+    if trend == "BULLISH":
+        return "BUY", "Upward structural support window intact"
+    return "HOLD", "Normal volatility constraints"
 
 def calculate_portfolio():
     total = 0.0
@@ -260,46 +251,19 @@ def calculate_portfolio():
         total += amount * get_cached_val(symbol, "price", 0.0)
     return total
 
-def fetch_market_data():
-    global MARKET_DATA_CACHE
+def fetch_market_data_loop():
+    """Background thread to keep values updated over time."""
     all_symbols = set(list(HOLDINGS.keys()) + WATCHLIST_SYMBOLS)
     for category_list in MARKET_CATEGORIES.values():
         all_symbols.update(category_list)
-    all_symbols = list(all_symbols)
     
     while True:
-        temp_cache = dict(MARKET_DATA_CACHE)
         for symbol in all_symbols:
-            try:
-                ticker = yf.Ticker(symbol)
-                data = ticker.history(period="3mo")
-                
-                if not data.empty:
-                    current_price = float(data["Close"].iloc[-1])
-                    change_pct = 0.0
-                    if len(data) > 1:
-                        prev_close = float(data["Close"].iloc[-2])
-                        change_pct = ((current_price - prev_close) / prev_close) * 100
-                    
-                    ma50 = float(data["Close"].tail(50).mean()) if len(data) >= 50 else float(data["Close"].mean())
-                    trend = "BULLISH" if current_price > ma50 else "BEARISH"
-
-                    temp_cache[symbol] = {
-                        "price": current_price,
-                        "change_pct": change_pct,
-                        "trend": trend,
-                        "ma50": ma50,
-                        "day_high": float(data["High"].iloc[-1]),
-                        "day_low": float(data["Low"].iloc[-1]),
-                        "volume": int(data["Volume"].iloc[-1]) if "Volume" in data.columns else 0
-                    }
-            except Exception:
-                pass
-
-        MARKET_DATA_CACHE = temp_cache
+            fetch_single_asset(symbol)
+            time.sleep(1) # Gentle throttling to avoid API rate limits
         time.sleep(300)
 
-monitor_thread = threading.Thread(target=fetch_market_data, daemon=True)
+monitor_thread = threading.Thread(target=fetch_market_data_loop, daemon=True)
 monitor_thread.start()
 
 # =========================
@@ -308,7 +272,6 @@ monitor_thread.start()
 
 @app.route("/")
 def home():
-    # Pure hyphens and spacing logic recreating the parabolic chart layout cleanly
     chart_matrix = (
         "                                           -------\n"
         "                                    -------|     |\n"
@@ -321,19 +284,15 @@ def home():
         " |     |       |      |      |      |      |     |\n"
         "---------------------------------------------------\n"
     )
-
     return f"""
     <html>
     <head><meta name="viewport" content="width=device-width, initial-scale=1.0">{STYLE}</head>
     <body>
         {NAVBAR_HTML}
-
         <div class="brand-title">KINDLE BLOOM</div>
-
         <div class="ascii-chart-container">
             <div class="ascii-chart">{chart_matrix}</div>
         </div>
-
         <div class="quote-container">
             <div class="quote-text">
                 "If you quit<br>
@@ -370,7 +329,7 @@ def portfolio():
 def markets():
     selected_type = request.args.get('type', 'indices')
     if selected_type not in MARKET_CATEGORIES: selected_type = 'indices'
-    type_labels = {"indices": "INDICES (30)", "crypto": "CRYPTO (30)", "stocks": "STOCKS (30)", "commodities": "COMMODITIES (30)"}
+    type_labels = {"indices": "INDICES", "crypto": "CRYPTO", "stocks": "STOCKS", "commodities": "COMMODITIES"}
     options_html = ""
     for category_key, visible_label in type_labels.items():
         active_class = "active" if selected_type == category_key else ""
@@ -378,22 +337,17 @@ def markets():
     rows = ""
     for symbol in MARKET_CATEGORIES[selected_type]:
         label = ASSET_LABELS.get(symbol, symbol)
-        price = get_cached_val(symbol, "price", None)
+        price = get_cached_val(symbol, "price", 0.0)
         change = get_cached_val(symbol, "change_pct", 0.0)
-        if price is None or price == 0.0:
-            rows += f'<div class="item"><span style="color:#666;"><strong>{label}</strong> ({symbol}): Syncing...</span></div>'
-        else:
-            rows += f'<div class="item"><a href="/asset/{symbol}"><strong>{label}</strong> ({symbol.split("-")[0]}): {price_format(price, symbol)} <span style="float:right;">{change:+.2f}%</span></a></div>'
+        rows += f'<div class="item"><a href="/asset/{symbol}"><strong>{label}</strong> ({symbol.split("-")[0]}): {price_format(price, symbol)} <span style="float:right;">{change:+.2f}%</span></a></div>'
     return f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'>{STYLE}</head><body>{NAVBAR_HTML}<div class='dropdown-menu'><div class='dropdown-toggle'>CHOOSE SECTOR GRID:</div><div class='dropdown-options'>{options_html}</div></div><div class='section'><div class='title'>{type_labels[selected_type]}</div>{rows}</div></body></html>"
 
 def price_format(val, symbol):
-    if any(x in symbol for x in ["GC=F", "CL=F", "SI=F", "NG=F", "HG=F", "-USD"]): return f"${val:,.2f}"
+    if any(x in symbol for x in ["GC=F", "CL=F", "SI=F", "-USD"]): return f"${val:,.2f}"
     return f"{val:,.2f}"
 
 @app.route("/asset/<symbol>")
 def asset(symbol):
-    if symbol not in MARKET_DATA_CACHE:
-        return f"<html><head>{STYLE}</head><body><h3>Asset initializing sync pipeline...</h3><a class='nav-btn' href='/'>HOME</a></body></html>"
     price = get_cached_val(symbol, "price", 0.0)
     change_pct = get_cached_val(symbol, "change_pct", 0.0)
     trend = get_cached_val(symbol, "trend", "UNKNOWN")
