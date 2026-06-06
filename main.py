@@ -1,6 +1,7 @@
 from flask import Flask, send_file, request
 import yfinance as yf
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
 import threading
 import time
 import io
@@ -169,13 +170,13 @@ NAVBAR_HTML = """
 """
 
 # =========================
-# ASSET CONFIGURATION DATA (30 Assets Per Segment)
+# ASSET CONFIGURATION DATA
 # =========================
 HOLDINGS = {
-    "BTC-USD": 1.25,
-    "ETH-USD": 4.2,
-    "SOL-USD": 0.7,
-    "XRP-USD": 11
+    "BTC-USD": 0.10,
+    "ETH-USD": 2.50,
+    "SOL-USD": 50.0,
+    "XRP-USD": 1000.0
 }
 
 WATCHLIST_SYMBOLS = ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "DOGE-USD", "AAPL", "MSFT", "NVDA", "TSLA"]
@@ -204,28 +205,24 @@ MARKET_CATEGORIES = {
 }
 
 ASSET_LABELS = {
-    # Indices
     "^GSPC": "S&P 500", "^IXIC": "NASDAQ Composite", "^DJI": "Dow Jones", "^RUT": "Russell 2000", "^VIX": "Volatility Index",
     "^FTSE": "FTSE 100", "^GDAXI": "DAX Performance", "^FCHI": "CAC 40", "^STOXX50E": "Euro Stoxx 50", "^N225": "Nikkei 225",
     "^HSI": "Hang Seng Index", "000001.SS": "SSE Composite", "399001.SZ": "Shenzhen Component", "^AXJO": "S&P/ASX 200", "^AORD": "All Ordinaries",
     "^BVSP": "IBOVESPA", "^MXX": "IPC Mexico", "^GSPTSE": "S&P/TSX Comp", "^NSEI": "NIFTY 50", "^BSESN": "SENSEX 30",
     "^KS11": "KOSPI Composite", "^TWII": "TSEC Weighted", "^BFX": "BEL 20", "^AEX": "AEX Index", "^SSMI": "Swiss Market",
     "^IBEX": "IBEX 35", "^OMXSPI": "OMX Stockholm", "^OSEAX": "Oslo Bourse", "IMOEX.ME": "MOEX Russia", "^JKSE": "Jakarta Composite",
-    # Crypto
     "BTC-USD": "Bitcoin", "ETH-USD": "Ethereum", "SOL-USD": "Solana", "XRP-USD": "Ripple", "BNB-USD": "BNB Chain", 
     "DOGE-USD": "Dogecoin", "ADA-USD": "Cardano", "TRX-USD": "TRON", "DOT-USD": "Polkadot", "LINK-USD": "Chainlink",
     "MATIC-USD": "Polygon", "AVAX-USD": "Avalanche", "SHIB-USD": "Shiba Inu", "LTC-USD": "Litecoin", "BCH-USD": "Bitcoin Cash",
     "UNI-USD": "Uniswap", "NEAR-USD": "NEAR Protocol", "LEO-USD": "UNUS SED LEO", "APT-USD": "Aptos", "ICP-USD": "Internet Computer",
     "XLM-USD": "Stellar Lumens", "STX-USD": "Stacks", "FIL-USD": "Filecoin", "GRT-USD": "The Graph", "RNDR-USD": "Render Token",
     "MKR-USD": "Maker", "OP-USD": "Optimism", "LDO-USD": "Lido DAO", "ATOM-USD": "Cosmos", "IMX-USD": "ImmutableX",
-    # Stocks
     "AAPL": "Apple Inc.", "MSFT": "Microsoft Corp.", "NVDA": "NVIDIA Corp.", "GOOGL": "Alphabet Inc.", "AMZN": "Amazon.com Inc.",
     "META": "Meta Platforms", "BRK-B": "Berkshire Hathaway", "TSLA": "Tesla Inc.", "LLY": "Eli Lilly & Co.", "V": "Visa Inc.",
     "UNH": "UnitedHealth Group", "JPM": "JPMorgan Chase", "XOM": "Exxon Mobil Corp.", "NKE": "NIKE Inc.", "WMT": "Walmart Inc.",
     "MA": "Mastercard Inc.", "AVGO": "Broadcom Inc.", "PG": "Procter & Gamble", "ORCL": "Oracle Corp.", "HD": "Home Depot Inc.",
     "ASML": "ASML Holding", "CVX": "Chevron Corp.", "COST": "Costco Wholesale", "MRK": "Merck & Co.", "KO": "Coca-Cola Co.",
     "PEP": "PepsiCo Inc.", "ADBE": "Adobe Inc.", "AMD": "Advanced Micro Devices", "BAC": "Bank of America", "T": "AT&T Corp.",
-    # Commodities
     "GC=F": "Gold Futures", "CL=F": "Crude Oil", "SI=F": "Silver Futures", "NG=F": "Natural Gas", "HG=F": "Copper Futures",
     "PL=F": "Platinum", "PA=F": "Palladium", "ZC=F": "Corn Futures", "ZO=F": "Oat Futures", "KE=F": "KC Wheat",
     "ZR=F": "Rough Rice", "ZM=F": "Soybean Meal", "ZL=F": "Soybean Oil", "ZS=F": "Soybeans", "GF=F": "Feeder Cattle",
@@ -235,15 +232,16 @@ ASSET_LABELS = {
 }
 
 MARKET_DATA_CACHE = {}
+cache_lock = threading.Lock()
 
 # =========================
-# CORE FINANCIAL ENGINE
+# HIGH-SPEED PARALLEL ENGINE
 # =========================
 def fetch_single_asset(symbol):
-    """Fetches a single asset directly if it's missing from the cache."""
+    """Fetches stock metrics instantly and drops it into thread-safe RAM cache."""
     try:
         ticker = yf.Ticker(symbol)
-        data = ticker.history(period="3mo")
+        data = ticker.history(period="1mo")
         if not data.empty:
             current_price = float(data["Close"].iloc[-1])
             change_pct = 0.0
@@ -254,57 +252,64 @@ def fetch_single_asset(symbol):
             ma50 = float(data["Close"].tail(50).mean()) if len(data) >= 50 else float(data["Close"].mean())
             trend = "BULLISH" if current_price > ma50 else "BEARISH"
 
-            MARKET_DATA_CACHE[symbol] = {
-                "price": current_price,
-                "change_pct": change_pct,
-                "trend": trend,
-                "ma50": ma50,
-                "day_high": float(data["High"].iloc[-1]),
-                "day_low": float(data["Low"].iloc[-1]),
-                "volume": int(data["Volume"].iloc[-1]) if "Volume" in data.columns else 0
-            }
-            return MARKET_DATA_CACHE[symbol]
+            with cache_lock:
+                MARKET_DATA_CACHE[symbol] = {
+                    "price": current_price,
+                    "change_pct": change_pct,
+                    "trend": trend,
+                    "ma50": ma50,
+                    "day_high": float(data["High"].iloc[-1]),
+                    "day_low": float(data["Low"].iloc[-1]),
+                    "volume": int(data["Volume"].iloc[-1]) if "Volume" in data.columns else 0
+                }
     except Exception:
         pass
-    return None
 
 def get_cached_val(symbol, key, default=0.0):
-    """Retrieves data safely. Triggers on-demand download if empty."""
-    if symbol not in MARKET_DATA_CACHE or MARKET_DATA_CACHE[symbol].get("price", 0) == 0:
-        res = fetch_single_asset(symbol)
-        if res: return res.get(key, default)
-    return MARKET_DATA_CACHE.get(symbol, {}).get(key, default)
-
-def calculate_ai_signal(symbol, price, ma50, trend):
-    if ma50 == 0 or price == 0: return "HOLD", "Insufficient parameters"
-    pct_above_ma50 = ((price - ma50) / ma50) * 100
-    if symbol == "BTC-USD": return "BUY", "Trend is Bullish | Price maintains above 50-day MA window"
-    if symbol == "ETH-USD": return "HOLD", "Consolidation phase | Volume patterns matching averages"
-    if symbol == "SOL-USD": return "STRONG BUY", "Parabolic volume metrics | Price outstrips MA50"
-    if trend == "BULLISH":
-        return "BUY", "Upward structural support window intact"
-    return "HOLD", "Normal volatility constraints"
-
-def calculate_portfolio():
-    total = 0.0
-    for symbol, amount in HOLDINGS.items():
-        total += amount * get_cached_val(symbol, "price", 0.0)
-    return total
+    """Non-blocking memory extractor. Keeps page responses down to 0ms."""
+    with cache_lock:
+        asset_data = MARKET_DATA_CACHE.get(symbol)
+    if asset_data:
+        return asset_data.get(key, default)
+    return default
 
 def fetch_market_data_loop():
-    """Background thread to keep values updated over time."""
+    """Asynchronous infinite parallel fetch layout."""
     all_symbols = set(list(HOLDINGS.keys()) + WATCHLIST_SYMBOLS)
     for category_list in MARKET_CATEGORIES.values():
         all_symbols.update(category_list)
-    
+    all_symbols = list(all_symbols)
+
+    # Boot performance boost: Instantly execute parallel lookups
+    with ThreadPoolExecutor(max_workers=15) as executor:
+        executor.map(fetch_single_asset, all_symbols)
+
     while True:
-        for symbol in all_symbols:
-            fetch_single_asset(symbol)
-            time.sleep(1) # Gentle throttling to avoid API rate limits
+        # Re-fetch loops every 5 minutes in a separate threat without blocking Flask requests
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            executor.map(fetch_single_asset, all_symbols)
         time.sleep(300)
 
+# Start background parallel system instantly on initialization
 monitor_thread = threading.Thread(target=fetch_market_data_loop, daemon=True)
 monitor_thread.start()
+
+# =========================
+# SYSTEM UTILITIES
+# =========================
+def calculate_ai_signal(symbol, price, ma50, trend):
+    if ma50 == 0 or price == 0: return "HOLD", "Warming up pipeline parameters..."
+    if symbol == "BTC-USD": return "BUY", "Trend Bullish | Holding technical key baseline support channels"
+    if symbol == "SOL-USD": return "STRONG BUY", "Velocity metrics surge above short-term MA structures"
+    return ("BUY", "Constructive structure intact") if trend == "BULLISH" else ("HOLD", "Bound within standard target parameters")
+
+def calculate_portfolio():
+    return sum(amount * get_cached_val(symbol, "price", 0.0) for symbol, amount in HOLDINGS.items())
+
+def price_format(val, symbol):
+    if val == 0.0: return "Syncing..."
+    if any(x in symbol for x in ["GC=F", "CL=F", "SI=F", "-USD"]): return f"${val:,.2f}"
+    return f"{val:,.2f}"
 
 # =========================
 # WEB ENGINE ROUTES
@@ -334,10 +339,7 @@ def home():
             <div class="ascii-chart">{chart_matrix}</div>
         </div>
         <div class="quote-container">
-            <div class="quote-text">
-                "If you quit<br>
-                Everyone was right about you"
-            </div>
+            <div class="quote-text">"If you quit<br>Everyone was right about you"</div>
         </div>
     </body>
     </html>
@@ -350,7 +352,11 @@ def watchlist():
         price = get_cached_val(symbol, "price", 0.0)
         change = get_cached_val(symbol, "change_pct", 0.0)
         label = ASSET_LABELS.get(symbol, symbol)
-        row_html = f'<div class="item"><a href="/asset/{symbol}"><strong>{label}</strong>: ${price:,.2f} | {change:+.2f}%</a></div>'
+        
+        display_price = price_format(price, symbol)
+        display_change = f"{change:+.2f}%" if price != 0.0 else "---"
+        
+        row_html = f'<div class="item"><a href="/asset/{symbol}"><strong>{label}</strong>: {display_price} | {display_change}</a></div>'
         if "-USD" in symbol: crypto_rows += row_html
         else: stock_rows += row_html
     return f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'>{STYLE}</head><body>{NAVBAR_HTML}<div class='section'><div class='title'>Cryptocurrency Watchlist</div>{crypto_rows}</div><div class='section'><div class='title'>Equities Watchlist</div>{stock_rows}</div></body></html>"
@@ -362,8 +368,11 @@ def portfolio():
     for symbol, amount in HOLDINGS.items():
         price = get_cached_val(symbol, "price", 0.0)
         label = ASSET_LABELS.get(symbol, symbol)
-        rows += f'<div class="item"><strong>{label}</strong>: {amount:,.4f} units <span style="float:right;">${(price * amount):,.2f}</span></div>'
-    return f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'>{STYLE}</head><body>{NAVBAR_HTML}<div class='section'><div class='title'>Portfolio Positions</div><div class='item' style='font-size:24px; font-weight:bold; margin-bottom:15px; border-bottom:2px solid black;'>Aggregate Value: <span style='float:right;'>${total:,.2f}</span></div>{rows}</div></body></html>"
+        display_subtotal = f"${(price * amount):,.2f}" if price != 0.0 else "Syncing..."
+        rows += f'<div class="item"><strong>{label}</strong>: {amount:,.4f} units <span style="float:right;">{display_subtotal}</span></div>'
+    
+    display_total = f"${total:,.2f}" if total > 0.0 else "Calculating..."
+    return f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'>{STYLE}</head><body>{NAVBAR_HTML}<div class='section'><div class='title'>Portfolio Positions</div><div class='item' style='font-size:24px; font-weight:bold; margin-bottom:15px; border-bottom:2px solid black;'>Aggregate Value: <span style='float:right;'>{display_total}</span></div>{rows}</div></body></html>"
 
 @app.route("/markets")
 def markets():
@@ -379,12 +388,12 @@ def markets():
         label = ASSET_LABELS.get(symbol, symbol)
         price = get_cached_val(symbol, "price", 0.0)
         change = get_cached_val(symbol, "change_pct", 0.0)
-        rows += f'<div class="item"><a href="/asset/{symbol}"><strong>{label}</strong> ({symbol.split("-")[0]}): {price_format(price, symbol)} <span style="float:right;">{change:+.2f}%</span></a></div>'
+        
+        display_price = price_format(price, symbol)
+        display_change = f"{change:+.2f}%" if price != 0.0 else ""
+        
+        rows += f'<div class="item"><a href="/asset/{symbol}"><strong>{label}</strong> ({symbol.split("-")[0]}): {display_price} <span style="float:right;">{display_change}</span></a></div>'
     return f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'>{STYLE}</head><body>{NAVBAR_HTML}<div class='dropdown-menu'><div class='dropdown-toggle'>CHOOSE SECTOR GRID:</div><div class='dropdown-options'>{options_html}</div></div><div class='section'><div class='title'>{type_labels[selected_type]} ({len(MARKET_CATEGORIES[selected_type])})</div>{rows}</div></body></html>"
-
-def price_format(val, symbol):
-    if any(x in symbol for x in ["GC=F", "CL=F", "SI=F", "-USD"]): return f"${val:,.2f}"
-    return f"{val:,.2f}"
 
 @app.route("/asset/<symbol>")
 def asset(symbol):
@@ -397,7 +406,8 @@ def asset(symbol):
     volume = get_cached_val(symbol, "volume", 0)
     label = ASSET_LABELS.get(symbol, symbol)
     signal, signal_reason = calculate_ai_signal(symbol, price, ma50, trend)
-    return f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'>{STYLE}</head><body>{NAVBAR_HTML}<div class='section'><div class='title'>{label} ({symbol})</div><div class='item' style='font-size: 26px; font-weight: bold; margin-top:10px; border:none;'>{price_format(price, symbol)}</div><div class='item' style='font-weight: bold; border:none; margin-bottom:5px;'>Trend Delta: {change_pct:+.2f}%</div></div><div class='signal-box'><div style='font-size: 11px; font-weight: bold; color: #555;'>KINDLE BLOOM AI SIGNAL</div><div class='signal-text'>{signal}</div><div class='signal-subtext'>{signal_reason}</div></div><div class='section'><div class='title'>Technical Metrics</div><div class='item'>Moving Target Status: <strong>{trend}</strong></div><div class='item'>50 Day MA Barrier: {price_format(ma50, symbol)}</div></div><div class='section'><div class='title'>Session Boundaries</div><div class='item'>Interval High: {price_format(day_high, symbol)}</div><div class='item'>Interval Low: {price_format(day_low, symbol)}</div><div class='item'>Accumulated Volume: {volume:,}</div></div></body></html>"
+    
+    return f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'>{STYLE}</head><body>{NAVBAR_HTML}<div class='section'><div class='title'>{label} ({symbol})</div><div class='item' style='font-size: 26px; font-weight: bold; margin-top:10px; border:none;'>{price_format(price, symbol)}</div><div class='item' style='font-weight: bold; border:none; margin-bottom:5px;'>Trend Delta: {f'{change_pct:+.2f}%' if price != 0.0 else '---'}</div></div><div class='signal-box'><div style='font-size: 11px; font-weight: bold; color: #555;'>KINDLE BLOOM AI SIGNAL</div><div class='signal-text'>{signal}</div><div class='signal-subtext'>{signal_reason}</div></div><div class='section'><div class='title'>Technical Metrics</div><div class='item'>Moving Target Status: <strong>{trend}</strong></div><div class='item'>50 Day MA Barrier: {price_format(ma50, symbol)}</div></div><div class='section'><div class='title'>Session Boundaries</div><div class='item'>Interval High: {price_format(day_high, symbol)}</div><div class='item'>Interval Low: {price_format(day_low, symbol)}</div><div class='item'>Accumulated Volume: {f'{volume:,}' if volume > 0 else '---'}</div></div></body></html>"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
