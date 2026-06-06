@@ -169,7 +169,7 @@ NAVBAR_HTML = """
 """
 
 # =========================
-# ASSET CONFIGURATION DATA
+# ASSET CONFIGURATION DATA (30 Assets Per Segment)
 # =========================
 HOLDINGS = {
     "BTC-USD": 0.10,
@@ -181,17 +181,57 @@ HOLDINGS = {
 WATCHLIST_SYMBOLS = ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "DOGE-USD", "AAPL", "MSFT", "NVDA", "TSLA"]
 
 MARKET_CATEGORIES = {
-    "indices": ["^GSPC", "^IXIC", "^DJI", "^RUT", "^VIX", "GC=F", "CL=F"],
-    "crypto": ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "BNB-USD", "DOGE-USD", "TRX-USD"],
-    "stocks": ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"],
-    "commodities": ["GC=F", "CL=F", "SI=F", "NG=F", "HG=F"]
+    "indices": [
+        "^GSPC", "^IXIC", "^DJI", "^RUT", "^VIX", "^FTSE", "^GDAXI", "^FCHI", "^STOXX50E", "^N225", 
+        "^HSI", "000001.SS", "399001.SZ", "^AXJO", "^AORD", "^BVSP", "^MXX", "^GSPTSE", "^NSEI", "^BSESN",
+        "^KS11", "^TWII", "^BFX", "^AEX", "^SSMI", "^IBEX", "^OMXSPI", "^OSEAX", "IMOEX.ME", "^JKSE"
+    ],
+    "crypto": [
+        "BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "BNB-USD", "DOGE-USD", "ADA-USD", "TRX-USD", "DOT-USD", "LINK-USD",
+        "MATIC-USD", "AVAX-USD", "SHIB-USD", "LTC-USD", "BCH-USD", "UNI-USD", "NEAR-USD", "LEO-USD", "APT-USD", "ICP-USD",
+        "XLM-USD", "STX-USD", "FIL-USD", "GRT-USD", "RNDR-USD", "MKR-USD", "OP-USD", "LDO-USD", "ATOM-USD", "IMX-USD"
+    ],
+    "stocks": [
+        "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "BRK-B", "TSLA", "LLY", "V",
+        "UNH", "JPM", "XOM", "NKE", "WMT", "MA", "AVGO", "PG", "ORCL", "HD",
+        "ASML", "CVX", "COST", "MRK", "KO", "PEP", "ADBE", "AMD", "BAC", "T"
+    ],
+    "commodities": [
+        "GC=F", "CL=F", "SI=F", "NG=F", "HG=F", "PL=F", "PA=F", "ZC=F", "ZO=F", "KE=F",
+        "ZR=F", "ZM=F", "ZL=F", "ZS=F", "GF=F", "HE=F", "LE=F", "CC=F", "KC=F", "CT=F",
+        "SB=F", "LB=F", "HO=F", "RB=F", "JO=F", "LBS=F", "LSU.L", "QC=F", "QI=F", "O=F"
+    ]
 }
 
 ASSET_LABELS = {
-    "^GSPC": "S&P 500", "^IXIC": "NASDAQ", "^DJI": "Dow Jones", "^RUT": "Russell 2000", "^VIX": "VIX",
-    "BTC-USD": "Bitcoin", "ETH-USD": "Ethereum", "SOL-USD": "Solana", "XRP-USD": "Ripple", "BNB-USD": "BNB Chain", "DOGE-USD": "Dogecoin", "TRX-USD": "TRON",
-    "AAPL": "Apple Inc.", "MSFT": "Microsoft", "NVDA": "NVIDIA", "GOOGL": "Alphabet", "AMZN": "Amazon", "META": "Meta", "TSLA": "Tesla",
-    "GC=F": "Gold", "CL=F": "Crude Oil", "SI=F": "Silver", "NG=F": "Natural Gas", "HG=F": "Copper"
+    # Indices
+    "^GSPC": "S&P 500", "^IXIC": "NASDAQ Composite", "^DJI": "Dow Jones", "^RUT": "Russell 2000", "^VIX": "Volatility Index",
+    "^FTSE": "FTSE 100", "^GDAXI": "DAX Performance", "^FCHI": "CAC 40", "^STOXX50E": "Euro Stoxx 50", "^N225": "Nikkei 225",
+    "^HSI": "Hang Seng Index", "000001.SS": "SSE Composite", "399001.SZ": "Shenzhen Component", "^AXJO": "S&P/ASX 200", "^AORD": "All Ordinaries",
+    "^BVSP": "IBOVESPA", "^MXX": "IPC Mexico", "^GSPTSE": "S&P/TSX Comp", "^NSEI": "NIFTY 50", "^BSESN": "SENSEX 30",
+    "^KS11": "KOSPI Composite", "^TWII": "TSEC Weighted", "^BFX": "BEL 20", "^AEX": "AEX Index", "^SSMI": "Swiss Market",
+    "^IBEX": "IBEX 35", "^OMXSPI": "OMX Stockholm", "^OSEAX": "Oslo Bourse", "IMOEX.ME": "MOEX Russia", "^JKSE": "Jakarta Composite",
+    # Crypto
+    "BTC-USD": "Bitcoin", "ETH-USD": "Ethereum", "SOL-USD": "Solana", "XRP-USD": "Ripple", "BNB-USD": "BNB Chain", 
+    "DOGE-USD": "Dogecoin", "ADA-USD": "Cardano", "TRX-USD": "TRON", "DOT-USD": "Polkadot", "LINK-USD": "Chainlink",
+    "MATIC-USD": "Polygon", "AVAX-USD": "Avalanche", "SHIB-USD": "Shiba Inu", "LTC-USD": "Litecoin", "BCH-USD": "Bitcoin Cash",
+    "UNI-USD": "Uniswap", "NEAR-USD": "NEAR Protocol", "LEO-USD": "UNUS SED LEO", "APT-USD": "Aptos", "ICP-USD": "Internet Computer",
+    "XLM-USD": "Stellar Lumens", "STX-USD": "Stacks", "FIL-USD": "Filecoin", "GRT-USD": "The Graph", "RNDR-USD": "Render Token",
+    "MKR-USD": "Maker", "OP-USD": "Optimism", "LDO-USD": "Lido DAO", "ATOM-USD": "Cosmos", "IMX-USD": "ImmutableX",
+    # Stocks
+    "AAPL": "Apple Inc.", "MSFT": "Microsoft Corp.", "NVDA": "NVIDIA Corp.", "GOOGL": "Alphabet Inc.", "AMZN": "Amazon.com Inc.",
+    "META": "Meta Platforms", "BRK-B": "Berkshire Hathaway", "TSLA": "Tesla Inc.", "LLY": "Eli Lilly & Co.", "V": "Visa Inc.",
+    "UNH": "UnitedHealth Group", "JPM": "JPMorgan Chase", "XOM": "Exxon Mobil Corp.", "NKE": "NIKE Inc.", "WMT": "Walmart Inc.",
+    "MA": "Mastercard Inc.", "AVGO": "Broadcom Inc.", "PG": "Procter & Gamble", "ORCL": "Oracle Corp.", "HD": "Home Depot Inc.",
+    "ASML": "ASML Holding", "CVX": "Chevron Corp.", "COST": "Costco Wholesale", "MRK": "Merck & Co.", "KO": "Coca-Cola Co.",
+    "PEP": "PepsiCo Inc.", "ADBE": "Adobe Inc.", "AMD": "Advanced Micro Devices", "BAC": "Bank of America", "T": "AT&T Corp.",
+    # Commodities
+    "GC=F": "Gold Futures", "CL=F": "Crude Oil", "SI=F": "Silver Futures", "NG=F": "Natural Gas", "HG=F": "Copper Futures",
+    "PL=F": "Platinum", "PA=F": "Palladium", "ZC=F": "Corn Futures", "ZO=F": "Oat Futures", "KE=F": "KC Wheat",
+    "ZR=F": "Rough Rice", "ZM=F": "Soybean Meal", "ZL=F": "Soybean Oil", "ZS=F": "Soybeans", "GF=F": "Feeder Cattle",
+    "HE=F": "Lean Hogs", "LE=F": "Live Cattle", "CC=F": "Cocoa", "KC=F": "Coffee", "CT=F": "Cotton",
+    "SB=F": "Sugar", "LB=F": "Lumber", "HO=F": "Heating Oil", "RB=F": "RBOB Gasoline", "JO=F": "Orange Juice",
+    "LBS=F": "Random Lumber", "LSU.L": "White Sugar", "QC=F": "London Cocoa", "QI=F": "Long Gilt", "O=F": "Feeder Cattle"
 }
 
 MARKET_DATA_CACHE = {}
@@ -340,7 +380,7 @@ def markets():
         price = get_cached_val(symbol, "price", 0.0)
         change = get_cached_val(symbol, "change_pct", 0.0)
         rows += f'<div class="item"><a href="/asset/{symbol}"><strong>{label}</strong> ({symbol.split("-")[0]}): {price_format(price, symbol)} <span style="float:right;">{change:+.2f}%</span></a></div>'
-    return f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'>{STYLE}</head><body>{NAVBAR_HTML}<div class='dropdown-menu'><div class='dropdown-toggle'>CHOOSE SECTOR GRID:</div><div class='dropdown-options'>{options_html}</div></div><div class='section'><div class='title'>{type_labels[selected_type]}</div>{rows}</div></body></html>"
+    return f"<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'>{STYLE}</head><body>{NAVBAR_HTML}<div class='dropdown-menu'><div class='dropdown-toggle'>CHOOSE SECTOR GRID:</div><div class='dropdown-options'>{options_html}</div></div><div class='section'><div class='title'>{type_labels[selected_type]} ({len(MARKET_CATEGORIES[selected_type])})</div>{rows}</div></body></html>"
 
 def price_format(val, symbol):
     if any(x in symbol for x in ["GC=F", "CL=F", "SI=F", "-USD"]): return f"${val:,.2f}"
