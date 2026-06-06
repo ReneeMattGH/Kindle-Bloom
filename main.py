@@ -172,10 +172,10 @@ NAVBAR_HTML = """
 # ASSET CONFIGURATION DATA (30 Assets Per Segment)
 # =========================
 HOLDINGS = {
-    "BTC-USD": 0.10,
-    "ETH-USD": 2.50,
-    "SOL-USD": 50.0,
-    "XRP-USD": 1000.0
+    "BTC-USD": 1.25,
+    "ETH-USD": 4.2,
+    "SOL-USD": 0.7,
+    "XRP-USD": 11
 }
 
 WATCHLIST_SYMBOLS = ["BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "DOGE-USD", "AAPL", "MSFT", "NVDA", "TSLA"]
