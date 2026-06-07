@@ -1,11 +1,17 @@
 from flask import Flask, send_file, request
 import yfinance as yf
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor
 import threading
 import time
+import requests
 
 app = Flask(__name__)
+
+# Enforce fake browser headers globally across yfinance sessions to bypass cloud blocks
+yf_session = requests.Session()
+yf_session.headers.update({
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+})
 
 # =========================
 # SYSTEM STYLES (E-Ink Minimalist Design)
@@ -234,67 +240,74 @@ MARKET_DATA_CACHE = {}
 cache_lock = threading.Lock()
 
 # =========================
-# MULTI-THREADED CRAWL ENGINE
+# PRODUCTION BATCH DOWNLOAD ENGINE
 # =========================
-def process_ticker_history(symbol):
-    """Processes asset targets cleanly using standardized 1D DataFrame instances."""
-    try:
-        # Request a 60-day window to calculate a 50-day Simple Moving Average
-        ticker = yf.Ticker(symbol)
-        df = ticker.history(period="60d", interval="1d")
-        
-        if df.empty:
-            return
-
-        # Collapse any unexpected column variations down to 1D structure
-        if isinstance(df.columns, range) or (hasattr(df.columns, 'levels') and len(df.columns.levels) > 1):
-            df.columns = df.columns.get_level_values(-1)
-
-        df = df.dropna(subset=["Close"])
-        if len(df) == 0:
-            return
-
-        current_price = float(df["Close"].iloc[-1])
-        change_pct = 0.0
-        if len(df) > 1:
-            prev_close = float(df["Close"].iloc[-2])
-            change_pct = ((current_price - prev_close) / prev_close) * 100
-
-        ma50 = float(df["Close"].tail(50).mean()) if len(df) >= 50 else current_price
-        trend = "BULLISH" if current_price > ma50 else "BEARISH"
-
-        with cache_lock:
-            MARKET_DATA_CACHE[symbol] = {
-                "price": current_price,
-                "change_pct": change_pct,
-                "trend": trend,
-                "ma50": ma50,
-                "day_high": float(df["High"].iloc[-1]),
-                "day_low": float(df["Low"].iloc[-1]),
-                "volume": int(df["Volume"].iloc[-1]) if "Volume" in df.columns else 0
-            }
-    except Exception:
-        pass
-
-def run_cache_pipeline():
-    """Builds collection lists and distributes processing loads across concurrent workers."""
+def refresh_market_cache():
+    """Downloads all assets inside ONE optimized, multi-index safe batch handshake."""
     all_symbols = set(list(HOLDINGS.keys()) + WATCHLIST_SYMBOLS)
     for category_list in MARKET_CATEGORIES.values():
         all_symbols.update(category_list)
     all_symbols = sorted(list(all_symbols))
 
-    # Multi-threaded batch execution profile (Max 8 workers to protect rate structures)
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        executor.map(process_ticker_history, all_symbols)
+    try:
+        # Pull a 60-day window via a single transaction using browser session verification headers
+        data = yf.download(
+            tickers=all_symbols, 
+            period="60d", 
+            interval="1d", 
+            group_by="ticker", 
+            session=yf_session, 
+            progress=False
+        )
+        
+        if data.empty:
+            print("[ERROR] Batch download returned empty DataFrame.")
+            return
+
+        for symbol in all_symbols:
+            try:
+                # Isolate the specific asset sub-dataframe safely
+                if symbol in data.columns.levels[0]:
+                    df = data[symbol].dropna(subset=["Close"])
+                else:
+                    continue
+                
+                if df.empty:
+                    continue
+
+                current_price = float(df["Close"].iloc[-1])
+                change_pct = 0.0
+                if len(df) > 1:
+                    prev_close = float(df["Close"].iloc[-2])
+                    change_pct = ((current_price - prev_close) / prev_close) * 100
+
+                ma50 = float(df["Close"].tail(50).mean())
+                trend = "BULLISH" if current_price > ma50 else "BEARISH"
+
+                with cache_lock:
+                    MARKET_DATA_CACHE[symbol] = {
+                        "price": current_price,
+                        "change_pct": change_pct,
+                        "trend": trend,
+                        "ma50": ma50,
+                        "day_high": float(df["High"].iloc[-1]),
+                        "day_low": float(df["Low"].iloc[-1]),
+                        "volume": int(df["Volume"].iloc[-1]) if "Volume" in df.columns else 0
+                    }
+            except Exception as e:
+                print(f"[ERROR] Failed parsing {symbol}: {str(e)}")
+    except Exception as e:
+        print(f"[CRITICAL] Batch fetch loop exception encountered: {str(e)}")
 
 def sync_loop_worker():
-    # Immediate initialization execution run
-    run_cache_pipeline()
+    # Stagger execution by 2 seconds to let Gunicorn master/workers clear startup spikes
+    time.sleep(2)
+    refresh_market_cache()
     while True:
-        time.sleep(300) # Full sync update cycle runs every 5 minutes
-        run_cache_pipeline()
+        time.sleep(300) # Sync updates across endpoints every 5 minutes
+        refresh_market_cache()
 
-# Launch background monitoring sequence
+# Launch independent cache collection process background engine
 monitor_thread = threading.Thread(target=sync_loop_worker, daemon=True)
 monitor_thread.start()
 
